@@ -17,7 +17,6 @@ export type Member = {
   occupation: string
   id_front_url?: string
   id_back_url?: string
-  id_fin: string
   id_fcn: string
   kebele_id_front_url?: string
   kebele_id_back_url?: string

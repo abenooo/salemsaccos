@@ -139,10 +139,6 @@ const MembersList: React.FC = () => {
             <h3 className="font-semibold text-gray-900 mb-3">የመታወቂያ መረጃ</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="font-medium text-gray-700">የፋይዳ መታወቂያ FIN:</span>
-                <span className="ml-2">{member.id_fin}</span>
-              </div>
-              <div>
                 <span className="font-medium text-gray-700">የፋይዳ መታወቂያ FCN:</span>
                 <span className="ml-2">{member.id_fcn}</span>
               </div>

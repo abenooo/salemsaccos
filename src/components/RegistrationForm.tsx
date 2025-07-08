@@ -128,7 +128,6 @@ const RegistrationForm: React.FC = () => {
             woreda: formData.woreda,
             city_kebele: formData.cityKebele,
             occupation: formData.occupation,
-            id_fin: formData.idFin,
             id_fcn: formData.idFcn,
             referrer_phone: formData.referrerPhone || null,
             phone_number: formData.phoneNumber,
@@ -155,7 +154,6 @@ const RegistrationForm: React.FC = () => {
         woreda: '',
         cityKebele: '',
         occupation: '',
-        idFin: '',
         idFcn: '',
         referrerPhone: '',
         phoneNumber: '',
@@ -337,21 +335,6 @@ const RegistrationForm: React.FC = () => {
                 value={formData.occupation}
                 onChange={handleInputChange}
                 placeholder="እየሰሩ ያሉት ሥራ/ትምህርት"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                የፋይዳ መታወቂያ FIN *
-              </label>
-              <input
-                type="text"
-                name="idFin"
-                value={formData.idFin}
-                onChange={handleInputChange}
-                placeholder="የፋይዳ መታወቂያ FIN ያስገቡ"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
