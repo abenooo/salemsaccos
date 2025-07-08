@@ -42,6 +42,24 @@ const DigitalSignature: React.FC<DigitalSignatureProps> = ({ onSignatureChange, 
     }
   }
 
+  const startDrawingTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    const touch = e.touches[0]
+    const x = touch.clientX - rect.left
+    const y = touch.clientY - rect.top
+
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      setIsDrawing(true)
+    }
+  }
+
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return
 
@@ -64,12 +82,42 @@ const DigitalSignature: React.FC<DigitalSignatureProps> = ({ onSignatureChange, 
     }
   }
 
+  const drawTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (!isDrawing) return
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    const touch = e.touches[0]
+    const x = touch.clientX - rect.left
+    const y = touch.clientY - rect.top
+
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.lineWidth = 2
+      ctx.lineCap = 'round'
+      ctx.strokeStyle = '#1f2937'
+      ctx.lineTo(x, y)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+    }
+  }
+
   const stopDrawing = () => {
     setIsDrawing(false)
     setHasSignature(true)
     saveSignature()
   }
 
+  const stopDrawingTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    setIsDrawing(false)
+    setHasSignature(true)
+    saveSignature()
+  }
   const saveSignature = () => {
     const canvas = canvasRef.current
     if (canvas) {
@@ -104,11 +152,14 @@ const DigitalSignature: React.FC<DigitalSignatureProps> = ({ onSignatureChange, 
           ref={canvasRef}
           width={400}
           height={150}
-          className="border border-gray-300 rounded bg-white cursor-crosshair w-full"
+          className="border border-gray-300 rounded bg-white cursor-crosshair w-full touch-none"
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseLeave={stopDrawing}
+          onTouchStart={startDrawingTouch}
+          onTouchMove={drawTouch}
+          onTouchEnd={stopDrawingTouch}
         />
         
         <div className="flex justify-between items-center mt-3">

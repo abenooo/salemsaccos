@@ -19,16 +19,11 @@ const RegistrationForm: React.FC = () => {
     referrerPhone: '',
     phoneNumber: '',
     maritalStatus: '',
-    familyTotal: 0,
-    familyMale: 0,
-    familyFemale: 0,
   })
 
   const [files, setFiles] = useState({
     idFront: null as File | null,
     idBack: null as File | null,
-    kebeleIdFront: null as File | null,
-    kebeleIdBack: null as File | null,
   })
 
   const [signature, setSignature] = useState('')
@@ -37,6 +32,19 @@ const RegistrationForm: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    
+    // Special validation for FCN field - only allow 16 digits
+    if (name === 'idFcn') {
+      const digitsOnly = value.replace(/\D/g, '')
+      if (digitsOnly.length <= 16) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: digitsOnly
+        }))
+      }
+      return
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -96,14 +104,6 @@ const RegistrationForm: React.FC = () => {
       if (files.idBack) {
         fileUrls.idBackUrl = await uploadFile(files.idBack, 'id-back')
       }
-      
-      if (files.kebeleIdFront) {
-        fileUrls.kebeleIdFrontUrl = await uploadFile(files.kebeleIdFront, 'kebele-id-front')
-      }
-      
-      if (files.kebeleIdBack) {
-        fileUrls.kebeleIdBackUrl = await uploadFile(files.kebeleIdBack, 'kebele-id-back')
-      }
 
       // Upload digital signature if present
       let signatureUrl = ''
@@ -133,14 +133,9 @@ const RegistrationForm: React.FC = () => {
             referrer_phone: formData.referrerPhone || null,
             phone_number: formData.phoneNumber,
             marital_status: formData.maritalStatus,
-            family_total: formData.familyTotal,
-            family_male: formData.familyMale,
-            family_female: formData.familyFemale,
             digital_signature_url: signatureUrl || null,
             id_front_url: fileUrls.idFrontUrl || null,
             id_back_url: fileUrls.idBackUrl || null,
-            kebele_id_front_url: fileUrls.kebeleIdFrontUrl || null,
-            kebele_id_back_url: fileUrls.kebeleIdBackUrl || null
           }
         ])
 
@@ -165,15 +160,10 @@ const RegistrationForm: React.FC = () => {
         referrerPhone: '',
         phoneNumber: '',
         maritalStatus: '',
-        familyTotal: 0,
-        familyMale: 0,
-        familyFemale: 0,
       })
       setFiles({
         idFront: null,
         idBack: null,
-        kebeleIdFront: null,
-        kebeleIdBack: null,
       })
       setSignature('')
       
@@ -376,10 +366,15 @@ const RegistrationForm: React.FC = () => {
                 name="idFcn"
                 value={formData.idFcn}
                 onChange={handleInputChange}
-                placeholder="የፋይዳ መታወቂያ FCN ያስገቡ"
+                placeholder="16 አሃዝ የፋይዳ መታወቂያ FCN ያስገቡ"
+                maxLength={16}
+                pattern="[0-9]{16}"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                16 አሃዝ ቁጥር ብቻ ያስገቡ ({formData.idFcn.length}/16)
+              </p>
             </div>
 
             <div>
@@ -424,60 +419,9 @@ const RegistrationForm: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="">አንዱን ይምረጡ</option>
-                <option value="single">ያላገባ</option>
-                <option value="married">ያገባ</option>
-                <option value="divorced">የፈታ</option>
-                <option value="widowed">የሞተበት</option>
+                <option value="ያላገባ">ያላገባ</option>
+                <option value="ያገባ">ያገባ</option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Users className="inline w-4 h-4 mr-1" />
-                ጠቅላላ የቤተሰብ ቁጥር *
-              </label>
-              <input
-                type="number"
-                name="familyTotal"
-                value={formData.familyTotal}
-                onChange={handleInputChange}
-                placeholder="0"
-                min="0"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ወንድ ብዛት *
-              </label>
-              <input
-                type="number"
-                name="familyMale"
-                value={formData.familyMale}
-                onChange={handleInputChange}
-                placeholder="0"
-                min="0"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ሴት ብዛት *
-              </label>
-              <input
-                type="number"
-                name="familyFemale"
-                value={formData.familyFemale}
-                onChange={handleInputChange}
-                placeholder="0"
-                min="0"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
             </div>
           </div>
 
@@ -497,16 +441,6 @@ const RegistrationForm: React.FC = () => {
               <FileUpload
                 label="የፋይዳ መታወቂያ ጀርባ"
                 onChange={(file) => handleFileChange('idBack', file)}
-              />
-              
-              <FileUpload
-                label="የቀበሌ መታወቂያ የፊት ገጽ"
-                onChange={(file) => handleFileChange('kebeleIdFront', file)}
-              />
-              
-              <FileUpload
-                label="የቀበሌ መታወቂያ ጀርባ"
-                onChange={(file) => handleFileChange('kebeleIdBack', file)}
               />
             </div>
           </div>

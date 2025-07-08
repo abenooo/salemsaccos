@@ -24,9 +24,6 @@ export type Member = {
   referrer_phone?: string
   phone_number: string
   marital_status: string
-  family_total: number
-  family_male: number
-  family_female: number
   digital_signature_url?: string
   created_at: string
   updated_at: string

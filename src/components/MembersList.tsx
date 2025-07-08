@@ -95,9 +95,7 @@ const MembersList: React.FC = () => {
               <div>
                 <span className="font-medium text-gray-700">የጋብቻ ሁኔታ:</span>
                 <span className="ml-2">
-                  {member.marital_status === 'single' ? 'ያላገባ' :
-                   member.marital_status === 'married' ? 'ያገባ' :
-                   member.marital_status === 'divorced' ? 'የፈታ' : 'የሞተበት'}
+                  {member.marital_status}
                 </span>
               </div>
               <div>
@@ -133,25 +131,6 @@ const MembersList: React.FC = () => {
                   <span className="ml-2">{member.referrer_phone}</span>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Family Information */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-900 mb-3">የቤተሰብ መረጃ</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-gray-700">ጠቅላላ ቁጥር:</span>
-                <span className="ml-2">{member.family_total}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">ወንድ ብዛት:</span>
-                <span className="ml-2">{member.family_male}</span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-700">ሴት ብዛት:</span>
-                <span className="ml-2">{member.family_female}</span>
-              </div>
             </div>
           </div>
 
