@@ -1,0 +1,545 @@
+import React, { useState } from 'react'
+import { User, Phone, Users, FileText, MapPin, Briefcase } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import FileUpload from './FileUpload'
+import DigitalSignature from './DigitalSignature'
+
+const RegistrationForm: React.FC = () => {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    fatherName: '',
+    grandfatherName: '',
+    gender: '',
+    region: '',
+    woreda: '',
+    cityKebele: '',
+    occupation: '',
+    idFin: '',
+    idFcn: '',
+    referrerPhone: '',
+    phoneNumber: '',
+    maritalStatus: '',
+    familyTotal: 0,
+    familyMale: 0,
+    familyFemale: 0,
+  })
+
+  const [files, setFiles] = useState({
+    idFront: null as File | null,
+    idBack: null as File | null,
+    kebeleIdFront: null as File | null,
+    kebeleIdBack: null as File | null,
+  })
+
+  const [signature, setSignature] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleFileChange = (field: keyof typeof files, file: File | null) => {
+    setFiles(prev => ({
+      ...prev,
+      [field]: file
+    }))
+  }
+
+  const uploadFile = async (file: File, path: string) => {
+    try {
+      // Generate a unique filename
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      const filePath = `${path}/${fileName}`
+
+      const { data, error } = await supabase.storage
+        .from('member-documents')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (error) {
+        console.error('Upload error:', error)
+        throw error
+      }
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('member-documents')
+        .getPublicUrl(filePath)
+
+      return publicUrl
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      throw error
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus('idle')
+
+    try {
+      // Upload files
+      const fileUrls: Record<string, string> = {}
+      
+      if (files.idFront) {
+        fileUrls.idFrontUrl = await uploadFile(files.idFront, 'id-front')
+      }
+      
+      if (files.idBack) {
+        fileUrls.idBackUrl = await uploadFile(files.idBack, 'id-back')
+      }
+      
+      if (files.kebeleIdFront) {
+        fileUrls.kebeleIdFrontUrl = await uploadFile(files.kebeleIdFront, 'kebele-id-front')
+      }
+      
+      if (files.kebeleIdBack) {
+        fileUrls.kebeleIdBackUrl = await uploadFile(files.kebeleIdBack, 'kebele-id-back')
+      }
+
+      // Upload digital signature if present
+      let signatureUrl = ''
+      if (signature) {
+        // Convert base64 to blob
+        const response = await fetch(signature)
+        const blob = await response.blob()
+        const signatureFile = new File([blob], 'signature.png', { type: 'image/png' })
+        signatureUrl = await uploadFile(signatureFile, 'signatures')
+      }
+
+      // Submit form data
+      const { error } = await supabase
+        .from('members')
+        .insert([
+          {
+            full_name: formData.fullName,
+            father_name: formData.fatherName,
+            grandfather_name: formData.grandfatherName,
+            gender: formData.gender,
+            region: formData.region,
+            woreda: formData.woreda,
+            city_kebele: formData.cityKebele,
+            occupation: formData.occupation,
+            id_fin: formData.idFin,
+            id_fcn: formData.idFcn,
+            referrer_phone: formData.referrerPhone || null,
+            phone_number: formData.phoneNumber,
+            marital_status: formData.maritalStatus,
+            family_total: formData.familyTotal,
+            family_male: formData.familyMale,
+            family_female: formData.familyFemale,
+            digital_signature_url: signatureUrl || null,
+            id_front_url: fileUrls.idFrontUrl || null,
+            id_back_url: fileUrls.idBackUrl || null,
+            kebele_id_front_url: fileUrls.kebeleIdFrontUrl || null,
+            kebele_id_back_url: fileUrls.kebeleIdBackUrl || null
+          }
+        ])
+
+      if (error) {
+        console.error('Database error:', error)
+        throw error
+      }
+
+      setSubmitStatus('success')
+      // Reset form
+      setFormData({
+        fullName: '',
+        fatherName: '',
+        grandfatherName: '',
+        gender: '',
+        region: '',
+        woreda: '',
+        cityKebele: '',
+        occupation: '',
+        idFin: '',
+        idFcn: '',
+        referrerPhone: '',
+        phoneNumber: '',
+        maritalStatus: '',
+        familyTotal: 0,
+        familyMale: 0,
+        familyFemale: 0,
+      })
+      setFiles({
+        idFront: null,
+        idBack: null,
+        kebeleIdFront: null,
+        kebeleIdBack: null,
+      })
+      setSignature('')
+      
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">ሳሌም ሳኮስ</h1>
+          <p className="text-gray-600">የአባልነት ምዝገባ ቅጽ</p>
+          <p className="text-sm text-gray-500 mt-2">
+            ለሳሌም የምስራታ ሂደት በእጅጉ ይጠቅማልና እባክዎ ሙሉ መረጃዎትን በአግባቡ ይመዝግቡ
+          </p>
+        </div>
+
+        {submitStatus === 'success' && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <p className="text-green-800 font-medium">✅ ምዝገባዎ በተሳካ ሁኔታ ተጠናቋል!</p>
+            <p className="text-green-700 text-sm mt-1">የአባልነት መረጃዎ በሳሌም ሳኮስ ዳታቤዝ ተመዝግቧል።</p>
+          </div>
+        )}
+
+        {submitStatus === 'error' && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-800 font-medium">❌ ምዝገባዎ ሳይሳካ ቀርቷል</p>
+            <p className="text-red-700 text-sm mt-1">እባክዎ ሁሉንም መረጃዎች በትክክል ሞልተው እንደገና ይሞክሩ።</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Personal Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <User className="inline w-4 h-4 mr-1" />
+                ሙሉ ስም *
+              </label>
+              <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                placeholder="የራስዎን ስም ያስገቡ"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                የአባት ስም *
+              </label>
+              <input
+                type="text"
+                name="fatherName"
+                value={formData.fatherName}
+                onChange={handleInputChange}
+                placeholder="የአባትዎን ስም ያስገቡ"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                የአያት ስም *
+              </label>
+              <input
+                type="text"
+                name="grandfatherName"
+                value={formData.grandfatherName}
+                onChange={handleInputChange}
+                placeholder="የአያትዎን ስም ያስገቡ"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ጾታ *
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">ጾታዎን ይምረጡ</option>
+                <option value="male">ወንድ</option>
+                <option value="female">ሴት</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <MapPin className="inline w-4 h-4 mr-1" />
+                ክልል *
+              </label>
+              <select
+                name="region"
+                value={formData.region}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">አንዱን ይምረጡ</option>
+                <option value="addis-ababa">አዲስ አበባ</option>
+                <option value="oromia">ኦሮሚያ</option>
+                <option value="amhara">አማራ</option>
+                <option value="tigray">ትግራይ</option>
+                <option value="snnpr">ደቡብ ብሔሮች</option>
+                <option value="sidama">ሲዳማ</option>
+                <option value="afar">አፋር</option>
+                <option value="somali">ሶማሊ</option>
+                <option value="benishangul">ቤንሻንጉል</option>
+                <option value="gambela">ጋምቤላ</option>
+                <option value="harari">ሐረሪ</option>
+                <option value="dire-dawa">ድሬዳዋ</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ወረዳ *
+              </label>
+              <input
+                type="text"
+                name="woreda"
+                value={formData.woreda}
+                onChange={handleInputChange}
+                placeholder="የሚኖሩበትን ወረዳ ያስገቡ"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ከተማ/ቀበሌ *
+              </label>
+              <input
+                type="text"
+                name="cityKebele"
+                value={formData.cityKebele}
+                onChange={handleInputChange}
+                placeholder="የሚኖሩበትን ክ/ከተማ/ቀበሌ ያስገቡ"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Briefcase className="inline w-4 h-4 mr-1" />
+                ስራ/ትምህርት *
+              </label>
+              <input
+                type="text"
+                name="occupation"
+                value={formData.occupation}
+                onChange={handleInputChange}
+                placeholder="እየሰሩ ያሉት ሥራ/ትምህርት"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                የፋይዳ መታወቂያ FIN *
+              </label>
+              <input
+                type="text"
+                name="idFin"
+                value={formData.idFin}
+                onChange={handleInputChange}
+                placeholder="የፋይዳ መታወቂያ FIN ያስገቡ"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                የፋይዳ መታወቂያ FCN *
+              </label>
+              <input
+                type="text"
+                name="idFcn"
+                value={formData.idFcn}
+                onChange={handleInputChange}
+                placeholder="የፋይዳ መታወቂያ FCN ያስገቡ"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Phone className="inline w-4 h-4 mr-1" />
+                የመሳቢያ ስልክ ቁጥር
+              </label>
+              <input
+                type="tel"
+                name="referrerPhone"
+                value={formData.referrerPhone}
+                onChange={handleInputChange}
+                placeholder="ወደሳሌም የጋበዘዎ ሰው ስልክ ቁጥር"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                የርስዎ ስልክ ቁጥር *
+              </label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+                placeholder="የርስዎን ስልክ ቁጥር ያስገቡ"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                የጋብቻ ሁኔታ *
+              </label>
+              <select
+                name="maritalStatus"
+                value={formData.maritalStatus}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">አንዱን ይምረጡ</option>
+                <option value="single">ያላገባ</option>
+                <option value="married">ያገባ</option>
+                <option value="divorced">የፈታ</option>
+                <option value="widowed">የሞተበት</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Users className="inline w-4 h-4 mr-1" />
+                ጠቅላላ የቤተሰብ ቁጥር *
+              </label>
+              <input
+                type="number"
+                name="familyTotal"
+                value={formData.familyTotal}
+                onChange={handleInputChange}
+                placeholder="0"
+                min="0"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ወንድ ብዛት *
+              </label>
+              <input
+                type="number"
+                name="familyMale"
+                value={formData.familyMale}
+                onChange={handleInputChange}
+                placeholder="0"
+                min="0"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ሴት ብዛት *
+              </label>
+              <input
+                type="number"
+                name="familyFemale"
+                value={formData.familyFemale}
+                onChange={handleInputChange}
+                placeholder="0"
+                min="0"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* File Uploads */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <FileText className="w-5 h-5 mr-2" />
+              ሰነዶች
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FileUpload
+                label="የፋይዳ መታወቂያ የፊት ገጽ"
+                onChange={(file) => handleFileChange('idFront', file)}
+              />
+              
+              <FileUpload
+                label="የፋይዳ መታወቂያ ጀርባ"
+                onChange={(file) => handleFileChange('idBack', file)}
+              />
+              
+              <FileUpload
+                label="የቀበሌ መታወቂያ የፊት ገጽ"
+                onChange={(file) => handleFileChange('kebeleIdFront', file)}
+              />
+              
+              <FileUpload
+                label="የቀበሌ መታወቂያ ጀርባ"
+                onChange={(file) => handleFileChange('kebeleIdBack', file)}
+              />
+            </div>
+          </div>
+
+          {/* Digital Signature */}
+          <div className="border-t pt-6">
+            <DigitalSignature
+              onSignatureChange={setSignature}
+              value={signature}
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="border-t pt-6">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  እየተመዘገበ...
+                </>
+              ) : (
+                'ይመዝገቡ'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+export default RegistrationForm
