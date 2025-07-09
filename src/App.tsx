@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
-import { Building, Menu, X } from 'lucide-react'
+import { Building, Menu, X, Phone, Mail } from 'lucide-react'
 import RegistrationForm from './components/RegistrationForm'
 import MembersList from './components/MembersList'
 import LandingPage from './components/LandingPage'
+import ContactModal from './components/ContactModal'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 
 function AppContent() {
   const location = useLocation()
   const [currentView, setCurrentView] = useState<'home' | 'register' | 'members'>('home')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
 
   // Update currentView based on current route
   React.useEffect(() => {
@@ -38,7 +40,11 @@ function AppContent() {
   }
 
   const handleScrollToSection = (sectionId: string) => {
-    scrollToSection(sectionId)
+    if (sectionId === 'contact') {
+      setIsContactModalOpen(true)
+    } else {
+      scrollToSection(sectionId)
+    }
     closeMobileMenu()
   }
 
@@ -54,7 +60,16 @@ function AppContent() {
               </div>
               <div>
                 <h1 className="text-lg sm:text-xl font-bold text-gray-900">ሳሌም ሳኮስ</h1>
-                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">info@salemsaccos.com • +251 910 4169 32</p>
+                <div className="hidden sm:flex flex-col lg:flex-row lg:items-center lg:space-x-4 text-xs sm:text-sm text-gray-600">
+                  <div className="flex items-center space-x-1">
+                    <Mail className="w-3 h-3" />
+                    <span>info@salemsaccos.com</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Phone className="w-3 h-3" />
+                    <span>+251 910 4169 32</span>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -108,7 +123,7 @@ function AppContent() {
                   </button>
                   
                   <button
-                    onClick={() => handleScrollToSection('contact')}
+                    onClick={() => setIsContactModalOpen(true)}
                     className="px-3 py-2 rounded-lg transition-colors text-sm font-medium text-gray-700 hover:bg-gray-100"
                   >
                     ያግኙን
@@ -209,7 +224,7 @@ function AppContent() {
                     የቁጠባ አይነት
                   </button>
                   <button
-                    onClick={() => handleScrollToSection('contact')}
+                    onClick={() => setIsContactModalOpen(true)}
                     className="block w-full text-left px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     ያግኙን
@@ -232,13 +247,19 @@ function AppContent() {
       {/* Main Content */}
       <main onClick={closeMobileMenu}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage onContactClick={() => setIsContactModalOpen(true)} />} />
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/members" element={<MembersList />} />
           {/* Redirect unknown routes to home */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
+
+      {/* Contact Modal */}
+      <ContactModal 
+        isOpen={isContactModalOpen} 
+        onClose={() => setIsContactModalOpen(false)} 
+      />
 
       {/* Footer - Only show on non-home pages */}
       {currentView !== 'home' && (

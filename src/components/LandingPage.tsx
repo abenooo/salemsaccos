@@ -19,7 +19,11 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-const LandingPage: React.FC = () => {
+interface LandingPageProps {
+  onContactClick: () => void
+}
+
+const LandingPage: React.FC<LandingPageProps> = ({ onContactClick }) => {
   const [memberCount, setMemberCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
@@ -60,11 +64,17 @@ const LandingPage: React.FC = () => {
                 ለማህበረሰባችን የተሻለ የኢኮኖሚ ደህንነት እና የፋይናንስ ነጻነት ለማምጣት የተቋቋመ ታማኝ የፋይናንስ ተቋም
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-white text-green-700 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 transition-colors flex items-center justify-center">
+                <button 
+                  onClick={() => window.location.href = '/register'}
+                  className="bg-white text-green-700 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 transition-colors flex items-center justify-center"
+                >
                   <Users className="w-5 h-5 mr-2" />
                   አባል ይሁኑ
                 </button>
-                <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-green-700 transition-colors flex items-center justify-center">
+                <button 
+                  onClick={onContactClick}
+                  className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-green-700 transition-colors flex items-center justify-center"
+                >
                   <Phone className="w-5 h-5 mr-2" />
                   ያግኙን
                 </button>
@@ -376,6 +386,7 @@ const LandingPage: React.FC = () => {
               </div>
               
               <button className="w-full bg-white text-green-700 py-3 px-6 rounded-lg font-semibold hover:bg-green-50 transition-colors mt-8 flex items-center justify-center">
+                onClick={() => window.location.href = '/register'}
                 <ArrowRight className="w-5 h-5 mr-2" />
                 አክሲዮን ይግዙ
               </button>
@@ -437,7 +448,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-green-600 text-white">
+      <section className="py-20 bg-green-600 text-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">ያግኙን</h2>
@@ -476,6 +487,12 @@ const LandingPage: React.FC = () => {
           <div className="mt-16 text-center">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto">
               <h3 className="text-2xl font-bold mb-4">የቢዝነስ ሰዓታት</h3>
+              <button
+                onClick={onContactClick}
+                className="mb-6 bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors"
+              >
+                ዝርዝር መረጃ ይመልከቱ
+              </button>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-green-100">
                 <div>
                   <p className="font-semibold">ሰኞ - አርብ</p>
