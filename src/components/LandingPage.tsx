@@ -385,8 +385,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onContactClick }) => {
                 ))}
               </div>
               
-              <button className="w-full bg-white text-green-700 py-3 px-6 rounded-lg font-semibold hover:bg-green-50 transition-colors mt-8 flex items-center justify-center">
+              <button 
                 onClick={() => window.location.href = '/register'}
+                className="w-full bg-white text-green-700 py-3 px-6 rounded-lg font-semibold hover:bg-green-50 transition-colors mt-8 flex items-center justify-center"
+              >
                 <ArrowRight className="w-5 h-5 mr-2" />
                 አክሲዮን ይግዙ
               </button>
