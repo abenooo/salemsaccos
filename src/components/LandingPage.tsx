@@ -96,7 +96,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onContactClick }) => {
                     <div className="bg-blue-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Banknote className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold">50M+</h3>
                     <h3 className="text-2xl font-bold">10M+</h3>
                     <p className="text-green-200">ብር ቁጠባ</p>
                   </div>
