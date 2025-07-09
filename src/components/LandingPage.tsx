@@ -97,20 +97,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onContactClick }) => {
                       <Banknote className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold">50M+</h3>
+                    <h3 className="text-2xl font-bold">10M+</h3>
                     <p className="text-green-200">ብር ቁጠባ</p>
                   </div>
                   <div className="text-center">
                     <div className="bg-yellow-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                       <TrendingUp className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold">95%</h3>
+                    <h3 className="text-2xl font-bold">100%</h3>
                     <p className="text-green-200">የብድር መመለሻ</p>
                   </div>
                   <div className="text-center">
                     <div className="bg-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Shield className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold">10+</h3>
+                    <h3 className="text-2xl font-bold">2+</h3>
                     <p className="text-green-200">ዓመታት ልምድ</p>
                   </div>
                 </div>
