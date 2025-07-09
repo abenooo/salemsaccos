@@ -1,4 +1,5 @@
 import React from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Building, 
   Users, 
@@ -16,8 +17,32 @@ import {
   CreditCard,
   Handshake
 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 const LandingPage: React.FC = () => {
+  const [memberCount, setMemberCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchMemberCount()
+  }, [])
+
+  const fetchMemberCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('members')
+        .select('*', { count: 'exact', head: true })
+
+      if (error) throw error
+      setMemberCount(count || 0)
+    } catch (error) {
+      console.error('Error fetching member count:', error)
+      setMemberCount(0)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -52,7 +77,9 @@ const LandingPage: React.FC = () => {
                     <div className="bg-green-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Users className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold">1000+</h3>
+                    <h3 className="text-2xl font-bold">
+                      {loading ? '...' : `${memberCount}+`}
+                    </h3>
                     <p className="text-green-200">አባላት</p>
                   </div>
                   <div className="text-center">

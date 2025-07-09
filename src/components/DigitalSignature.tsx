@@ -150,9 +150,10 @@ const DigitalSignature: React.FC<DigitalSignatureProps> = ({ onSignatureChange, 
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
         <canvas
           ref={canvasRef}
-          width={400}
+          width={800}
           height={150}
-          className="border border-gray-300 rounded bg-white cursor-crosshair w-full touch-none"
+          className="border border-gray-300 rounded bg-white cursor-crosshair w-full touch-none max-w-full"
+          style={{ maxWidth: '100%', height: 'auto' }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}

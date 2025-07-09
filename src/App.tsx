@@ -3,10 +3,22 @@ import { Building } from 'lucide-react'
 import RegistrationForm from './components/RegistrationForm'
 import MembersList from './components/MembersList'
 import LandingPage from './components/LandingPage'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 
-function App() {
+function AppContent() {
+  const location = useLocation()
   const [currentView, setCurrentView] = useState<'home' | 'register' | 'members'>('home')
+
+  // Update currentView based on current route
+  React.useEffect(() => {
+    if (location.pathname === '/') {
+      setCurrentView('home')
+    } else if (location.pathname === '/register') {
+      setCurrentView('register')
+    } else if (location.pathname === '/members') {
+      setCurrentView('members')
+    }
+  }, [location.pathname])
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -33,7 +45,7 @@ function App() {
             
             <nav className="hidden lg:flex space-x-4 xl:space-x-6">
               <button
-                onClick={() => setCurrentView('home')}
+                onClick={() => window.location.href = '/'}
                 className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
                   currentView === 'home'
                     ? 'bg-green-600 text-white'
@@ -90,7 +102,7 @@ function App() {
               )}
               
               <button
-                onClick={() => setCurrentView('register')}
+                onClick={() => window.location.href = '/register'}
                 className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
                   currentView === 'register'
                     ? 'bg-green-600 text-white'
@@ -99,31 +111,17 @@ function App() {
               >
                 አዲስ ምዝገባ
               </button>
-              
-              {/* 
-              <button
-                onClick={() => setCurrentView('members')}
-                className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
-                  currentView === 'members'
-                    ? 'bg-green-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                የተመዘገቡ አባላት
-              </button>
-              */}
             </nav>
 
             {/* Mobile Menu */}
             <div className="lg:hidden">
               <select
-                value={currentView}
-                onChange={(e) => setCurrentView(e.target.value as any)}
+                value={location.pathname}
+                onChange={(e) => window.location.href = e.target.value}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
               >
-                <option value="home">መቅድም</option>
-                <option value="register">አዲስ ምዝገባ</option>
-                <option value="members">የተመዘገቡ አባላት</option>
+                <option value="/">መቅድም</option>
+                <option value="/register">አዲስ ምዝገባ</option>
               </select>
             </div>
           </div>
@@ -238,6 +236,14 @@ function App() {
           </div>
         </footer>
       )}
+    </Router>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   )
 }
