@@ -60,7 +60,7 @@ function AppContent() {
               </div>
               <div>
                 <h1 className="text-lg sm:text-xl font-bold text-gray-900">ሳሌም ሳኮስ</h1>
-                <div className="hidden sm:flex flex-col lg:flex-row lg:items-center lg:space-x-4 text-xs sm:text-sm text-gray-600">
+                <div className="hidden sm:flex flex-col text-xs sm:text-sm text-gray-600 space-y-0.5">
                   <div className="flex items-center space-x-1">
                     <Mail className="w-3 h-3" />
                     <span>info@salemsaccos.com</span>
