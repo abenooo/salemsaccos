@@ -164,9 +164,9 @@ const DigitalSignature: React.FC<DigitalSignatureProps> = ({ onSignatureChange, 
         />
         
         <div className="flex justify-between items-center mt-3">
-          <p className="text-xs text-gray-500">
+{/*           <p className="text-xs text-gray-500">
             * ይህ መስክ ግዴታ ነው። የስልክዎ ስክሪን የማይሰራ ከሆነ ፎቶ አንስተው ማስገባት ይችላሉ።
-          </p>
+          </p> */}
           
           <div className="flex gap-2">
             <button
