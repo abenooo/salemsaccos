@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { Users, Search, Calendar, Phone, MapPin, FileText, Eye, X } from 'lucide-react'
+import { Users, Search, Calendar, Phone, MapPin, FileText, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase, type Member } from '../lib/supabase'
 
 const MembersList: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([])
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([])
+  const [paginatedMembers, setPaginatedMembers] = useState<Member[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
   useEffect(() => {
     fetchMembers()
@@ -16,6 +19,10 @@ const MembersList: React.FC = () => {
   useEffect(() => {
     filterMembers()
   }, [searchTerm, members])
+
+  useEffect(() => {
+    paginateMembers()
+  }, [filteredMembers, currentPage])
 
   const fetchMembers = async () => {
     try {
@@ -48,6 +55,31 @@ const MembersList: React.FC = () => {
     )
 
     setFilteredMembers(filtered)
+    setCurrentPage(1) // Reset to first page when filtering
+  }
+
+  const paginateMembers = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    setPaginatedMembers(filteredMembers.slice(startIndex, endIndex))
+  }
+
+  const totalPages = Math.ceil(filteredMembers.length / itemsPerPage)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -186,7 +218,8 @@ const MembersList: React.FC = () => {
                 የተመዘገቡ አባላት
               </h1>
               <p className="text-gray-600 mt-1">
-                ጠቅላላ {members.length} አባላት ተመዝግበዋል
+                ጠቅላላ {filteredMembers.length} አባላት ተመዝግበዋል
+                {filteredMembers.length !== members.length && ` (ከ ${members.length} ውስጥ)`}
               </p>
             </div>
             
@@ -228,7 +261,7 @@ const MembersList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMembers.map((member) => (
+              {paginatedMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -273,7 +306,7 @@ const MembersList: React.FC = () => {
             </tbody>
           </table>
 
-          {filteredMembers.length === 0 && (
+          {paginatedMembers.length === 0 && filteredMembers.length === 0 && (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">
@@ -282,6 +315,72 @@ const MembersList: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {filteredMembers.length > 0 && totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                የ {((currentPage - 1) * itemsPerPage) + 1} እስከ {Math.min(currentPage * itemsPerPage, filteredMembers.length)} ከ {filteredMembers.length} ውጤቶች
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  ቀዳሚ
+                </button>
+                
+                <div className="flex space-x-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current page
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => goToPage(page)}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                            page === currentPage
+                              ? 'bg-green-600 text-white'
+                              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    } else if (
+                      (page === currentPage - 2 && currentPage > 3) ||
+                      (page === currentPage + 2 && currentPage < totalPages - 2)
+                    ) {
+                      return (
+                        <span key={page} className="px-2 py-2 text-sm text-gray-500">
+                          ...
+                        </span>
+                      )
+                    }
+                    return null
+                  })}
+                </div>
+                
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ቀጣይ
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {selectedMember && (

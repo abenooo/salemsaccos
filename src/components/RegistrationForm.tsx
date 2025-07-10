@@ -90,6 +90,14 @@ const RegistrationForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate required digital signature
+    if (!signature.trim()) {
+      setSubmitStatus('error')
+      alert('እባክዎ የዲጂታል ፊርማዎን ያስገቡ')
+      return
+    }
+    
     setIsSubmitting(true)
     setSubmitStatus('idle')
 
@@ -430,17 +438,29 @@ const RegistrationForm: React.FC = () => {
 
           {/* Digital Signature */}
           <div className="border-t pt-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <FileText className="w-5 h-5 mr-2" />
+                የዲጂታል ፊርማ (ግዴታ)
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                የአባልነት ምዝገባዎን ለማጠናቀቅ የዲጂታል ፊርማዎ ያስፈልጋል
+              </p>
+            </div>
             <DigitalSignature
               onSignatureChange={setSignature}
               value={signature}
             />
+            {!signature && (
+              <p className="text-red-500 text-sm mt-2">* የዲጂታል ፊርማ ግዴታ ነው</p>
+            )}
           </div>
 
           {/* Submit Button */}
           <div className="border-t pt-6">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !signature.trim()}
               className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center"
             >
               {isSubmitting ? (
@@ -452,6 +472,11 @@ const RegistrationForm: React.FC = () => {
                 'ይመዝገቡ'
               )}
             </button>
+            {!signature.trim() && (
+              <p className="text-center text-sm text-gray-500 mt-2">
+                ለመመዝገብ የዲጂታል ፊርማዎን ማጠናቀቅ ያስፈልጋል
+              </p>
+            )}
           </div>
         </form>
       </div>

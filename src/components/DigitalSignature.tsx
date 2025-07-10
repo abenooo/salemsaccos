@@ -143,11 +143,11 @@ const DigitalSignature: React.FC<DigitalSignatureProps> = ({ onSignatureChange, 
       <div className="flex items-center gap-2 mb-2">
         <Pen className="w-4 h-4 text-gray-600" />
         <label className="text-sm font-medium text-gray-700">
-          የዲጂታል ፊርማ (Digital Signature)
+          የዲጂታል ፊርማ (Digital Signature) *
         </label>
       </div>
       
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+      <div className="border-2 border-dashed border-red-300 rounded-lg p-4 bg-red-50">
         <canvas
           ref={canvasRef}
           width={800}
@@ -165,7 +165,7 @@ const DigitalSignature: React.FC<DigitalSignatureProps> = ({ onSignatureChange, 
         
         <div className="flex justify-between items-center mt-3">
           <p className="text-xs text-gray-500">
-            የስልክዎ ስክሪን የማይሰራ ከሆነ ፎቶ አንስተው ማስገባት ይችላሉ።
+            * ይህ መስክ ግዴታ ነው። የስልክዎ ስክሪን የማይሰራ ከሆነ ፎቶ አንስተው ማስገባት ይችላሉ።
           </p>
           
           <div className="flex gap-2">
