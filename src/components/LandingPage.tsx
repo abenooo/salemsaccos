@@ -135,7 +135,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onContactClick }) => {
               <h3 className="text-2xl font-bold text-gray-900 mb-6">የእኛ ታሪክ እና ራዕይ</h3>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  ሳሌም ሳኮስ በ2014 ዓ.ም የተቋቋመ ሲሆን ለማህበረሰቡ አባላት ተደራሽ እና ተመጣጣኝ የፋይናንስ አገልግሎት ለመስጠት ይሰራል።
+                  ሳሌም ሳኮስ ከ2015 ዓ.ም ጀምሮ የተቋቋመ ሲሆን ለማህበረሰቡ አባላት ተደራሽ እና ተመጣጣኝ የፋይናንስ አገልግሎት ለመስጠት ይሰራል።
                 </p>
                 <p>
                   የእኛ ራዕይ በማህበረሰባችን ውስጥ የፋይናንስ ማካተት እና የኢኮኖሚ ዕድገትን ማስፋፋት ነው።
