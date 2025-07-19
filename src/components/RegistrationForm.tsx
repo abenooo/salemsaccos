@@ -350,7 +350,7 @@ const RegistrationForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                የፋይዳ መታወቂያ FCN *
+                    የፋይዳ መታወቂያ FCN/FAN *
               </label>
               <input
                 type="text"
