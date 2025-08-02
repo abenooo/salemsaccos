@@ -248,7 +248,7 @@ const RegistrationForm: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <User className="inline w-4 h-4 mr-1" />
-                ሙሉ ስም *
+                ስም *
               </label>
               <input
                 type="text"
@@ -353,7 +353,7 @@ const RegistrationForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                ከተማ/ቀበሌ *
+                ክፍለ ከተማ/ቀበሌ *
               </label>
               <input
                 type="text"
