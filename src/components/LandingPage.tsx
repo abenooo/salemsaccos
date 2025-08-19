@@ -500,6 +500,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onContactClick }) => {
                   <p className="font-semibold">ሰኞ - አርብ</p>
                   <p>8:00 ጠዋት - 5:00 ከሰዓት</p>
                 </div>
+                
                 <div>
                   <p className="font-semibold">ቅዳሜ</p>
                   <p>8:00 ጠዋት - 12:00 ቀትር</p>
