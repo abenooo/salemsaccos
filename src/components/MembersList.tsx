@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Users, Search, Calendar, Phone, MapPin, FileText, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, Search, Calendar, Phone, MapPin, FileText, Eye, X, ChevronLeft, ChevronRight, Filter, Printer } from 'lucide-react'
 import { supabase, type Member } from '../lib/supabase'
 
 const MembersList: React.FC = () => {
@@ -7,6 +7,8 @@ const MembersList: React.FC = () => {
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([])
   const [paginatedMembers, setPaginatedMembers] = useState<Member[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [searchCategory, setSearchCategory] = useState('all')
+  const [regionFilter, setRegionFilter] = useState('all')
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -18,7 +20,7 @@ const MembersList: React.FC = () => {
 
   useEffect(() => {
     filterMembers()
-  }, [searchTerm, members])
+  }, [searchTerm, searchCategory, regionFilter, members])
 
   useEffect(() => {
     paginateMembers()
@@ -42,17 +44,47 @@ const MembersList: React.FC = () => {
   }
 
   const filterMembers = () => {
-    if (!searchTerm.trim()) {
-      setFilteredMembers(members)
-      return
+    let filtered = members
+
+    // Filter by region
+    if (regionFilter !== 'all') {
+      filtered = filtered.filter(member => member.region === regionFilter)
     }
 
-    const filtered = members.filter(member =>
-      member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.phone_number.includes(searchTerm) ||
-      member.city_kebele.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.woreda.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    // Filter by search term and category
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(member => {
+        const term = searchTerm.toLowerCase()
+        
+        switch (searchCategory) {
+          case 'name':
+            return member.full_name.toLowerCase().includes(term) ||
+                   member.father_name.toLowerCase().includes(term) ||
+                   member.grandfather_name.toLowerCase().includes(term)
+          case 'phone':
+            return member.phone_number.includes(term) ||
+                   (member.referrer_phone && member.referrer_phone.includes(term))
+          case 'address':
+            return member.city_kebele.toLowerCase().includes(term) ||
+                   member.woreda.toLowerCase().includes(term) ||
+                   member.region.toLowerCase().includes(term)
+          case 'occupation':
+            return member.occupation.toLowerCase().includes(term)
+          case 'id':
+            return member.id_fcn.includes(term)
+          default: // 'all'
+            return member.full_name.toLowerCase().includes(term) ||
+                   member.father_name.toLowerCase().includes(term) ||
+                   member.grandfather_name.toLowerCase().includes(term) ||
+                   member.phone_number.includes(term) ||
+                   member.city_kebele.toLowerCase().includes(term) ||
+                   member.woreda.toLowerCase().includes(term) ||
+                   member.occupation.toLowerCase().includes(term) ||
+                   member.id_fcn.includes(term) ||
+                   (member.referrer_phone && member.referrer_phone.includes(term))
+        }
+      })
+    }
 
     setFilteredMembers(filtered)
     setCurrentPage(1) // Reset to first page when filtering
@@ -62,6 +94,114 @@ const MembersList: React.FC = () => {
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
     setPaginatedMembers(filteredMembers.slice(startIndex, endIndex))
+  }
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>ሳሌም ሳኮስ - የአባላት ዝርዝር</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #16a34a; padding-bottom: 20px; }
+            .logo { color: #16a34a; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+            .subtitle { color: #666; font-size: 14px; }
+            .filters { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+            .filters h3 { margin: 0 0 10px 0; font-size: 16px; }
+            .filter-item { margin: 5px 0; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+            th { background-color: #16a34a; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 20px; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">ሳሌም ሳኮስ</div>
+            <div class="subtitle">የወንድሞች እና እህቶች ቁጠባና ብድር ኅብረት ስራ ማኅበር</div>
+            <div class="subtitle">የአባላት ዝርዝር ዘገባ</div>
+          </div>
+          
+          <div class="filters">
+            <h3>የማጣሪያ መረጃ:</h3>
+            <div class="filter-item"><strong>ክልል:</strong> ${regionFilter === 'all' ? 'ሁሉም' : regionFilter}</div>
+            <div class="filter-item"><strong>የፍለጋ ምድብ:</strong> ${
+              searchCategory === 'all' ? 'ሁሉም' :
+              searchCategory === 'name' ? 'ስም' :
+              searchCategory === 'phone' ? 'ስልክ ቁጥር' :
+              searchCategory === 'address' ? 'አድራሻ' :
+              searchCategory === 'occupation' ? 'ስራ' :
+              searchCategory === 'id' ? 'መታወቂያ' : searchCategory
+            }</div>
+            <div class="filter-item"><strong>የፍለጋ ቃል:</strong> ${searchTerm || 'ምንም'}</div>
+            <div class="filter-item"><strong>ጠቅላላ ውጤቶች:</strong> ${filteredMembers.length} አባላት</div>
+            <div class="filter-item"><strong>የህትመት ቀን:</strong> ${new Date().toLocaleDateString('am-ET')}</div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>ተ.ቁ</th>
+                <th>ሙሉ ስም</th>
+                <th>የአባት ስም</th>
+                <th>የአያት ስም</th>
+                <th>ጾታ</th>
+                <th>ክልል</th>
+                <th>ወረዳ</th>
+                <th>ከተማ/ቀበሌ</th>
+                <th>ስልክ ቁጥር</th>
+                <th>ስራ</th>
+                <th>የጋብቻ ሁኔታ</th>
+                <th>የምዝገባ ቀን</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredMembers.map((member, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>${member.full_name}</td>
+                  <td>${member.father_name}</td>
+                  <td>${member.grandfather_name}</td>
+                  <td>${member.gender === 'male' ? 'ወንድ' : 'ሴት'}</td>
+                  <td>${member.region}</td>
+                  <td>${member.woreda}</td>
+                  <td>${member.city_kebele}</td>
+                  <td>${member.phone_number}</td>
+                  <td>${member.occupation}</td>
+                  <td>${member.marital_status}</td>
+                  <td>${formatDate(member.created_at)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="footer">
+            <p>ሳሌም ሳኮስ - የወንድሞች እና እህቶች ቁጠባና ብድር ኅብረት ስራ ማኅበር</p>
+            <p>ስልክ: +251 910 4169 32 | ኢሜይል: info@salemsaccos.com</p>
+            <p>አዲስ አበባ፣ ኢትዮጵያ</p>
+          </div>
+        </body>
+      </html>
+    `
+
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => {
+      printWindow.print()
+      printWindow.close()
+    }, 250)
+  }
+
+  const getUniqueRegions = () => {
+    const regions = [...new Set(members.map(member => member.region))]
+    return regions.sort()
   }
 
   const totalPages = Math.ceil(filteredMembers.length / itemsPerPage)
@@ -312,6 +452,9 @@ const MembersList: React.FC = () => {
               <p className="text-gray-500">
                 {searchTerm ? 'ምንም ውጤት አልተገኘም' : 'ምንም አባላት እስካሁን አልተመዘገቡም'}
               </p>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ስራ
+                </th>
             </div>
           )}
         </div>
@@ -324,6 +467,61 @@ const MembersList: React.FC = () => {
                 የ {((currentPage - 1) * itemsPerPage) + 1} እስከ {Math.min(currentPage * itemsPerPage, filteredMembers.length)} ከ {filteredMembers.length} ውጤቶች
               </div>
               
+              <button
+                onClick={handlePrint}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                ህትመት
+              </button>
+            </div>
+            
+            {/* Search and Filter Controls */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Region Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Filter className="inline w-4 h-4 mr-1" />
+                  በክልል ማጣሪያ
+                      {member.city_kebele}, {member.woreda}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {member.region}
+                <select
+                  value={regionFilter}
+                  onChange={(e) => setRegionFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {member.occupation}
+                  </td>
+                  <option value="all">ሁሉም ክልሎች</option>
+                  {getUniqueRegions().map(region => (
+                    <option key={region} value={region}>{region}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Search Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  የፍለጋ ምድብ
+                </label>
+                <select
+                  value={searchCategory}
+                  onChange={(e) => setSearchCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="all">ሁሉም</option>
+                  <option value="name">ስም</option>
+                  <option value="phone">ስልክ ቁጥር</option>
+                  <option value="address">አድራሻ</option>
+                  <option value="occupation">ስራ</option>
+                  <option value="id">መታወቂያ</option>
+                </select>
+              </div>
+              
+              {/* Search Input */}
               <div className="flex items-center space-x-2">
                 <button
                   onClick={goToPreviousPage}
@@ -369,17 +567,28 @@ const MembersList: React.FC = () => {
                   })}
                 </div>
                 
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ፍለጋ
+                </label>
                 <button
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages}
-                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder={
+                    searchCategory === 'all' ? 'ሁሉንም ይፈልጉ...' :
+                    searchCategory === 'name' ? 'ስም ይፈልጉ...' :
+                    searchCategory === 'phone' ? 'ስልክ ቁጥር ይፈልጉ...' :
+                    searchCategory === 'address' ? 'አድራሻ ይፈልጉ...' :
+                    searchCategory === 'occupation' ? 'ስራ ይፈልጉ...' :
+                    searchCategory === 'id' ? 'መታወቂያ ይፈልጉ...' : 'ይፈልጉ...'
+                  }
                 >
                   ቀጣይ
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent w-full"
                 </button>
               </div>
             </div>
           </div>
+        </div>
         )}
       </div>
 
