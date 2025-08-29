@@ -1,14 +1,30 @@
-import React, { useState, useEffect } from 'react'
-import { Users, Search, Calendar, Phone, MapPin, FileText, Eye, X, ChevronLeft, ChevronRight, Filter, Printer } from 'lucide-react'
-import { supabase, type Member } from '../lib/supabase'
+"use client"
+
+import type React from "react"
+import { useState, useEffect } from "react"
+import {
+  Users,
+  Search,
+  Calendar,
+  Phone,
+  MapPin,
+  FileText,
+  Eye,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Printer,
+} from "lucide-react"
+import { supabase, type Member } from "../lib/supabase"
 
 const MembersList: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([])
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([])
   const [paginatedMembers, setPaginatedMembers] = useState<Member[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [searchCategory, setSearchCategory] = useState('all')
-  const [regionFilter, setRegionFilter] = useState('all')
+  const [searchTerm, setSearchTerm] = useState("")
+  const [searchCategory, setSearchCategory] = useState("all")
+  const [regionFilter, setRegionFilter] = useState("all")
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -28,16 +44,13 @@ const MembersList: React.FC = () => {
 
   const fetchMembers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .order('created_at', { ascending: false })
+      const { data, error } = await supabase.from("members").select("*").order("created_at", { ascending: false })
 
       if (error) throw error
 
       setMembers(data || [])
     } catch (error) {
-      console.error('Error fetching members:', error)
+      console.error("Error fetching members:", error)
     } finally {
       setLoading(false)
     }
@@ -47,41 +60,46 @@ const MembersList: React.FC = () => {
     let filtered = members
 
     // Filter by region
-    if (regionFilter !== 'all') {
-      filtered = filtered.filter(member => member.region === regionFilter)
+    if (regionFilter !== "all") {
+      filtered = filtered.filter((member) => member.region === regionFilter)
     }
 
     // Filter by search term and category
     if (searchTerm.trim()) {
-      filtered = filtered.filter(member => {
+      filtered = filtered.filter((member) => {
         const term = searchTerm.toLowerCase()
-        
+
         switch (searchCategory) {
-          case 'name':
-            return member.full_name.toLowerCase().includes(term) ||
-                   member.father_name.toLowerCase().includes(term) ||
-                   member.grandfather_name.toLowerCase().includes(term)
-          case 'phone':
-            return member.phone_number.includes(term) ||
-                   (member.referrer_phone && member.referrer_phone.includes(term))
-          case 'address':
-            return member.city_kebele.toLowerCase().includes(term) ||
-                   member.woreda.toLowerCase().includes(term) ||
-                   member.region.toLowerCase().includes(term)
-          case 'occupation':
+          case "name":
+            return (
+              member.full_name.toLowerCase().includes(term) ||
+              member.father_name.toLowerCase().includes(term) ||
+              member.grandfather_name.toLowerCase().includes(term)
+            )
+          case "phone":
+            return member.phone_number.includes(term) || (member.referrer_phone && member.referrer_phone.includes(term))
+          case "address":
+            return (
+              member.city_kebele.toLowerCase().includes(term) ||
+              member.woreda.toLowerCase().includes(term) ||
+              member.region.toLowerCase().includes(term)
+            )
+          case "occupation":
             return member.occupation.toLowerCase().includes(term)
-          case 'id':
+          case "id":
             return member.id_fcn.includes(term)
           default: // 'all'
-            return member.full_name.toLowerCase().includes(term) ||
-                   member.father_name.toLowerCase().includes(term) ||
-                   member.grandfather_name.toLowerCase().includes(term) ||
-                   member.phone_number.includes(term) ||
-                   member.city_kebele.toLowerCase().includes(term) ||
-                   member.woreda.toLowerCase().includes(term) ||
-                   member.occupation.toLowerCase().includes(term) ||
-                   member.id_fcn.includes(term) ||
-                   (member.referrer_phone && member.referrer_phone.includes(term))
+            return (
+              member.full_name.toLowerCase().includes(term) ||
+              member.father_name.toLowerCase().includes(term) ||
+              member.grandfather_name.toLowerCase().includes(term) ||
+              member.phone_number.includes(term) ||
+              member.city_kebele.toLowerCase().includes(term) ||
+              member.woreda.toLowerCase().includes(term) ||
+              member.occupation.toLowerCase().includes(term) ||
+              member.id_fcn.includes(term) ||
+              (member.referrer_phone && member.referrer_phone.includes(term))
+            )
         }
       })
     }
@@ -97,7 +115,7 @@ const MembersList: React.FC = () => {
   }
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank')
+    const printWindow = window.open("", "_blank")
     if (!printWindow) return
 
     const printContent = `
@@ -130,18 +148,25 @@ const MembersList: React.FC = () => {
           
           <div class="filters">
             <h3>የማጣሪያ መረጃ:</h3>
-            <div class="filter-item"><strong>ክልል:</strong> ${regionFilter === 'all' ? 'ሁሉም' : regionFilter}</div>
+            <div class="filter-item"><strong>ክልል:</strong> ${regionFilter === "all" ? "ሁሉም" : regionFilter}</div>
             <div class="filter-item"><strong>የፍለጋ ምድብ:</strong> ${
-              searchCategory === 'all' ? 'ሁሉም' :
-              searchCategory === 'name' ? 'ስም' :
-              searchCategory === 'phone' ? 'ስልክ ቁጥር' :
-              searchCategory === 'address' ? 'አድራሻ' :
-              searchCategory === 'occupation' ? 'ስራ' :
-              searchCategory === 'id' ? 'መታወቂያ' : searchCategory
+              searchCategory === "all"
+                ? "ሁሉም"
+                : searchCategory === "name"
+                  ? "ስም"
+                  : searchCategory === "phone"
+                    ? "ስልክ ቁጥር"
+                    : searchCategory === "address"
+                      ? "አድራሻ"
+                      : searchCategory === "occupation"
+                        ? "ስራ"
+                        : searchCategory === "id"
+                          ? "መታወቂያ"
+                          : searchCategory
             }</div>
-            <div class="filter-item"><strong>የፍለጋ ቃል:</strong> ${searchTerm || 'ምንም'}</div>
+            <div class="filter-item"><strong>የፍለጋ ቃል:</strong> ${searchTerm || "ምንም"}</div>
             <div class="filter-item"><strong>ጠቅላላ ውጤቶች:</strong> ${filteredMembers.length} አባላት</div>
-            <div class="filter-item"><strong>የህትመት ቀን:</strong> ${new Date().toLocaleDateString('am-ET')}</div>
+            <div class="filter-item"><strong>የህትመት ቀን:</strong> ${new Date().toLocaleDateString("am-ET")}</div>
           </div>
           
           <table>
@@ -162,13 +187,15 @@ const MembersList: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              ${filteredMembers.map((member, index) => `
+              ${filteredMembers
+                .map(
+                  (member, index) => `
                 <tr>
                   <td>${index + 1}</td>
                   <td>${member.full_name}</td>
                   <td>${member.father_name}</td>
                   <td>${member.grandfather_name}</td>
-                  <td>${member.gender === 'male' ? 'ወንድ' : 'ሴት'}</td>
+                  <td>${member.gender === "male" ? "ወንድ" : "ሴት"}</td>
                   <td>${member.region}</td>
                   <td>${member.woreda}</td>
                   <td>${member.city_kebele}</td>
@@ -177,7 +204,9 @@ const MembersList: React.FC = () => {
                   <td>${member.marital_status}</td>
                   <td>${formatDate(member.created_at)}</td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join("")}
             </tbody>
           </table>
           
@@ -200,7 +229,7 @@ const MembersList: React.FC = () => {
   }
 
   const getUniqueRegions = () => {
-    const regions = [...new Set(members.map(member => member.region))]
+    const regions = [...new Set(members.map((member) => member.region))]
     return regions.sort()
   }
 
@@ -223,10 +252,10 @@ const MembersList: React.FC = () => {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('am-ET', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("am-ET", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     })
   }
 
@@ -235,10 +264,7 @@ const MembersList: React.FC = () => {
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-900">የአባል ዝርዝር መረጃ</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -262,13 +288,11 @@ const MembersList: React.FC = () => {
               </div>
               <div>
                 <span className="font-medium text-gray-700">ጾታ:</span>
-                <span className="ml-2">{member.gender === 'male' ? 'ወንድ' : 'ሴት'}</span>
+                <span className="ml-2">{member.gender === "male" ? "ወንድ" : "ሴት"}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-700">የጋብቻ ሁኔታ:</span>
-                <span className="ml-2">
-                  {member.marital_status}
-                </span>
+                <span className="ml-2">{member.marital_status}</span>
               </div>
               <div>
                 <span className="font-medium text-gray-700">ስራ/ትምህርት:</span>
@@ -279,7 +303,7 @@ const MembersList: React.FC = () => {
 
           {/* Contact Information */}
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-900 mb-3">የግኃት መረጃ</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">የግ Hannah መረጃ</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium text-gray-700">ክልል:</span>
@@ -322,7 +346,7 @@ const MembersList: React.FC = () => {
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="font-semibold text-gray-900 mb-3">ዲጂታል ፊርማ</h3>
               <img
-                src={member.digital_signature_url}
+                src={member.digital_signature_url || "/placeholder.svg"}
                 alt="Digital Signature"
                 className="max-w-xs border border-gray-300 rounded"
               />
@@ -362,7 +386,7 @@ const MembersList: React.FC = () => {
                 {filteredMembers.length !== members.length && ` (ከ ${members.length} ውስጥ)`}
               </p>
             </div>
-            
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -376,37 +400,80 @@ const MembersList: React.FC = () => {
           </div>
         </div>
 
+        <div className="p-6 border-b bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Region Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Filter className="inline w-4 h-4 mr-1" />
+                በክልል ማጣሪያ
+              </label>
+              <select
+                value={regionFilter}
+                onChange={(e) => setRegionFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="all">ሁሉም ክልሎች</option>
+                {getUniqueRegions().map((region) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Search Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">የፍለጋ ምድብ</label>
+              <select
+                value={searchCategory}
+                onChange={(e) => setSearchCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="all">ሁሉም</option>
+                <option value="name">ስም</option>
+                <option value="phone">ስልክ ቁጥር</option>
+                <option value="address">አድራሻ</option>
+                <option value="occupation">ስራ</option>
+                <option value="id">መታወቂያ</option>
+              </select>
+            </div>
+
+            {/* Print Button */}
+            <div className="flex items-end">
+              <button
+                onClick={handlePrint}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full justify-center"
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                ህትመት
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ስም
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ስም</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ስልክ ቁጥር
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  አድራሻ
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ጾታ
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">አድራሻ</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ጾታ</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ስራ</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   የምዝገባ ቀን
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ተግባር
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ተግባር</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {member.full_name}
-                    </div>
+                    <div className="text-sm font-medium text-gray-900">{member.full_name}</div>
                     <div className="text-sm text-gray-500">
                       {member.father_name} {member.grandfather_name}
                     </div>
@@ -424,8 +491,10 @@ const MembersList: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {member.gender === 'male' ? 'ወንድ' : 'ሴት'}
+                    {member.gender === "male" ? "ወንድ" : "ሴት"}
                   </td>
+                  {/* Occupation Column */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.occupation}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm text-gray-900">
                       <Calendar className="w-4 h-4 mr-1" />
@@ -449,12 +518,7 @@ const MembersList: React.FC = () => {
           {paginatedMembers.length === 0 && filteredMembers.length === 0 && (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">
-                {searchTerm ? 'ምንም ውጤት አልተገኘም' : 'ምንም አባላት እስካሁን አልተመዘገቡም'}
-              </p>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ስራ
-                </th>
+              <p className="text-gray-500">{searchTerm ? "ምንም ውጤት አልተገኘም" : "ምንም አባላት እስካሁን አልተመዘገቡም"}</p>
             </div>
           )}
         </div>
@@ -464,64 +528,11 @@ const MembersList: React.FC = () => {
           <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-700">
-                የ {((currentPage - 1) * itemsPerPage) + 1} እስከ {Math.min(currentPage * itemsPerPage, filteredMembers.length)} ከ {filteredMembers.length} ውጤቶች
+                የ {(currentPage - 1) * itemsPerPage + 1} እስከ{" "}
+                {Math.min(currentPage * itemsPerPage, filteredMembers.length)} ከ {filteredMembers.length} ውጤቶች
               </div>
-              
-              <button
-                onClick={handlePrint}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Printer className="w-4 h-4 mr-2" />
-                ህትመት
-              </button>
-            </div>
-            
-            {/* Search and Filter Controls */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Region Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Filter className="inline w-4 h-4 mr-1" />
-                  በክልል ማጣሪያ
-                      {member.city_kebele}, {member.woreda}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {member.region}
-                <select
-                  value={regionFilter}
-                  onChange={(e) => setRegionFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {member.occupation}
-                  </td>
-                  <option value="all">ሁሉም ክልሎች</option>
-                  {getUniqueRegions().map(region => (
-                    <option key={region} value={region}>{region}</option>
-                  ))}
-                </select>
-              </div>
-              
-              {/* Search Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  የፍለጋ ምድብ
-                </label>
-                <select
-                  value={searchCategory}
-                  onChange={(e) => setSearchCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="all">ሁሉም</option>
-                  <option value="name">ስም</option>
-                  <option value="phone">ስልክ ቁጥር</option>
-                  <option value="address">አድራሻ</option>
-                  <option value="occupation">ስራ</option>
-                  <option value="id">መታወቂያ</option>
-                </select>
-              </div>
-              
-              {/* Search Input */}
+
+              {/* Pagination Controls */}
               <div className="flex items-center space-x-2">
                 <button
                   onClick={goToPreviousPage}
@@ -531,23 +542,19 @@ const MembersList: React.FC = () => {
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   ቀዳሚ
                 </button>
-                
+
                 <div className="flex space-x-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                     // Show first page, last page, current page, and pages around current page
-                    if (
-                      page === 1 ||
-                      page === totalPages ||
-                      (page >= currentPage - 1 && page <= currentPage + 1)
-                    ) {
+                    if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
                       return (
                         <button
                           key={page}
                           onClick={() => goToPage(page)}
                           className={`px-3 py-2 text-sm font-medium rounded-lg ${
                             page === currentPage
-                              ? 'bg-green-600 text-white'
-                              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                              ? "bg-green-600 text-white"
+                              : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
                           }`}
                         >
                           {page}
@@ -566,38 +573,22 @@ const MembersList: React.FC = () => {
                     return null
                   })}
                 </div>
-                
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ፍለጋ
-                </label>
+
                 <button
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages}
-                  placeholder={
-                    searchCategory === 'all' ? 'ሁሉንም ይፈልጉ...' :
-                    searchCategory === 'name' ? 'ስም ይፈልጉ...' :
-                    searchCategory === 'phone' ? 'ስልክ ቁጥር ይፈልጉ...' :
-                    searchCategory === 'address' ? 'አድራሻ ይፈልጉ...' :
-                    searchCategory === 'occupation' ? 'ስራ ይፈልጉ...' :
-                    searchCategory === 'id' ? 'መታወቂያ ይፈልጉ...' : 'ይፈልጉ...'
-                  }
+                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ቀጣይ
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent w-full"
+                  <ChevronRight className="w-4 h-4 ml-1" />
                 </button>
               </div>
             </div>
           </div>
-        </div>
         )}
       </div>
 
-      {selectedMember && (
-        <MemberDetailModal
-          member={selectedMember}
-          onClose={() => setSelectedMember(null)}
-        />
-      )}
+      {selectedMember && <MemberDetailModal member={selectedMember} onClose={() => setSelectedMember(null)} />}
     </div>
   )
 }
